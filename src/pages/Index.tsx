@@ -39,7 +39,7 @@ const Index = () => {
               </div>
 
               <div className="space-y-4">
-                <Link to="/login">
+                <Link to="/auth">
                   <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary hover:shadow-financial transition-all duration-300 h-14 px-8 text-lg">
                     Get Started Today
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -130,7 +130,7 @@ const Index = () => {
             <p className="text-xl text-muted-foreground mb-8">
               Start your application today and get approved in minutes
             </p>
-            <Link to="/login">
+            <Link to="/auth">
               <Button className="bg-gradient-to-r from-success to-secondary hover:shadow-success transition-all duration-300 h-14 px-12 text-lg">
                 Apply for Loan Now
                 <ArrowRight className="ml-2 h-5 w-5" />

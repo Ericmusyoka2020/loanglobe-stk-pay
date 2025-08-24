@@ -5,7 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, DollarSign, Clock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Shield, DollarSign, Clock, LogOut } from "lucide-react";
 
 interface LoanFormData {
   fullName: string;
@@ -22,6 +24,7 @@ const LoanApplication = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, signOut } = useAuth();
 
   const handleInputChange = (field: keyof LoanFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -70,7 +73,7 @@ const LoanApplication = () => {
     return true;
   };
 
-  const handleActivateLoan = async (e: React.FormEvent) => {
+  const handleSubmitApplication = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -78,51 +81,47 @@ const LoanApplication = () => {
     setIsLoading(true);
     
     try {
-      // Simulate STK Push payment process
-      toast({
-        title: "Processing Payment",
-        description: "Initiating STK Push for KES 99...",
+      // Store loan application in Supabase
+      const { error } = await supabase
+        .from('loan_applications')
+        .insert([
+          {
+            user_id: user?.id,
+            full_name: formData.fullName,
+            id_number: formData.idNumber,
+            phone_number: formData.phoneNumber,
+            status: 'submitted'
+          }
+        ]);
+
+      if (error) {
+        throw error;
+      }
+
+      // Send data to Formspree as well
+      await fetch('https://formspree.io/f/xqadzdpo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          idNumber: formData.idNumber,
+          phoneNumber: formData.phoneNumber,
+          userEmail: user?.email,
+          timestamp: new Date().toISOString(),
+        }),
       });
 
-      // In a real app, this would call your backend API to initiate Pesapal STK Push
-      // For demo purposes, we'll simulate the process
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Simulate successful payment
-      const paymentSuccess = Math.random() > 0.2; // 80% success rate for demo
-      
-      if (paymentSuccess) {
-        // Simulate sending data to Formspree
-        const formspreeResponse = await fetch('https://formspree.io/f/xqadzdpo', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            fullName: formData.fullName,
-            idNumber: formData.idNumber,
-            phoneNumber: formData.phoneNumber,
-            amount: 'KES 99',
-            timestamp: new Date().toISOString(),
-          }),
-        });
-
-        if (formspreeResponse.ok) {
-          toast({
-            title: "Success!",
-            description: "Payment successful and application submitted.",
-          });
-          navigate("/success");
-        } else {
-          throw new Error("Failed to submit application data");
-        }
-      } else {
-        throw new Error("Payment failed");
-      }
-    } catch (error) {
+      toast({
+        title: "Success!",
+        description: "Your loan application has been submitted successfully.",
+      });
+      navigate("/success");
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Payment failed. Please try again.",
+        description: error.message || "Failed to submit application. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -133,14 +132,25 @@ const LoanApplication = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
-            Loan Application
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Complete your loan application in just a few steps
-          </p>
+        {/* Header with Sign Out */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
+              Loan Application
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Complete your loan application in just a few steps
+            </p>
+          </div>
+          <Button 
+            onClick={signOut} 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
         </div>
 
         {/* Features */}
@@ -172,7 +182,7 @@ const LoanApplication = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleActivateLoan} className="space-y-6">
+              <form onSubmit={handleSubmitApplication} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name</Label>
                   <Input
@@ -212,26 +222,17 @@ const LoanApplication = () => {
                   />
                 </div>
 
-                {/* Loan Amount Display */}
-                <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-lg border">
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-2">Activation Fee</p>
-                    <p className="text-3xl font-bold text-primary">KES 99</p>
-                    <p className="text-sm text-muted-foreground mt-2">One-time activation fee to unlock your loan facility</p>
-                  </div>
-                </div>
-
                 <Button 
                   type="submit" 
                   className="w-full h-14 text-lg bg-gradient-to-r from-success to-secondary hover:shadow-success transition-all duration-300"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Processing Payment..." : "Activate Your Loan Now"}
+                  {isLoading ? "Submitting Application..." : "Submit Loan Application"}
                 </Button>
 
                 <p className="text-xs text-center text-muted-foreground">
-                  By clicking "Activate Your Loan Now", you agree to our terms and conditions. 
-                  You will receive an STK Push notification to complete the payment.
+                  By clicking "Submit Loan Application", you agree to our terms and conditions. 
+                  Your application will be processed and you will be contacted soon.
                 </p>
               </form>
             </CardContent>

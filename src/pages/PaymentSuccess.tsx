@@ -2,10 +2,12 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Home, Phone, Mail } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { CheckCircle, Home, Phone, Mail, LogOut } from "lucide-react";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   useEffect(() => {
     // Add some celebratory animation or confetti here if desired
@@ -15,15 +17,33 @@ const PaymentSuccess = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-success/10 via-background to-primary/5">
       <div className="container mx-auto px-4 py-8">
+        {/* Header with Sign Out */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-success to-secondary bg-clip-text text-transparent">
+              Application Successful!
+            </h1>
+          </div>
+          <Button 
+            onClick={signOut} 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
+        
         <div className="max-w-2xl mx-auto text-center">
           {/* Success Animation */}
           <div className="mb-8 animate-bounce">
             <CheckCircle className="h-24 w-24 text-success mx-auto mb-4" />
             <h1 className="text-4xl font-bold text-success mb-2">
-              Loan Activation Successful!
+              Application Submitted Successfully!
             </h1>
             <p className="text-xl text-muted-foreground">
-              Your loan facility has been successfully activated
+              Your loan application has been received and is being processed
             </p>
           </div>
 
@@ -34,7 +54,7 @@ const PaymentSuccess = () => {
                 🎉 Congratulations!
               </CardTitle>
               <CardDescription className="text-lg">
-                Your payment of KES 99 has been processed successfully
+                Thank you for choosing LoanGlobe! Your application has been submitted successfully.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -46,8 +66,8 @@ const PaymentSuccess = () => {
                       <CheckCircle className="h-5 w-5 text-success" />
                     </div>
                     <div>
-                      <p className="font-medium">Application Submitted</p>
-                      <p className="text-sm text-muted-foreground">Your loan application has been forwarded to our processing team</p>
+                      <p className="font-medium">Application Received</p>
+                      <p className="text-sm text-muted-foreground">Your loan application has been successfully submitted to our processing team</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
