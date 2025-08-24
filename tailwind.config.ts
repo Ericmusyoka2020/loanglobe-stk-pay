@@ -26,11 +26,16 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					hover: 'hsl(var(--primary-hover))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
@@ -85,6 +90,15 @@ export default {
 						height: '0'
 					}
 				}
+			},
+			boxShadow: {
+				'financial': '0 10px 30px -10px hsl(210 100% 45% / 0.3)',
+				'success': '0 10px 30px -10px hsl(140 80% 45% / 0.3)',
+			},
+			backgroundImage: {
+				'gradient-primary': 'linear-gradient(135deg, hsl(210, 100%, 45%), hsl(195, 85%, 50%))',
+				'gradient-secondary': 'linear-gradient(135deg, hsl(155, 70%, 45%), hsl(140, 80%, 50%))',
+				'gradient-hero': 'linear-gradient(135deg, hsl(210, 100%, 45%) 0%, hsl(195, 85%, 50%) 50%, hsl(155, 70%, 45%) 100%)',
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
